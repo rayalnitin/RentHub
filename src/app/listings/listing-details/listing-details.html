@@ -1,0 +1,348 @@
+@if (listing) {
+  <a routerLink="/listings" class="text-sm text-indigo-600 hover:underline"
+    >&larr; Back to all listings</a
+  >
+
+  <div class="grid gap-6 lg:grid-cols-3 mt-4">
+    <!-- Left side: photos and details -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        @if (listing.photos.length > 0) {
+          <img
+            [src]="listing.photos[selectedPhoto]"
+            [alt]="listing.title"
+            class="w-full h-64 md:h-96 object-cover"
+          />
+          <div class="flex gap-2 p-3 overflow-x-auto">
+            @for (photo of listing.photos; track photo; let i = $index) {
+              <img
+                [src]="photo"
+                alt="Photo thumbnail"
+                (click)="selectPhoto(i)"
+                class="h-16 w-24 object-cover rounded cursor-pointer border-2"
+                [class.border-indigo-600]="i === selectedPhoto"
+                [class.border-transparent]="i !== selectedPhoto"
+              />
+            }
+          </div>
+        }
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ listing.title }}</h1>
+            <p class="text-gray-500">{{ listing.streetAddress }}</p>
+          </div>
+          <p class="text-2xl font-bold text-indigo-600">
+            {{ listing.rent | currency: 'USD' : 'symbol' : '1.0-0' }}
+            <span class="text-sm font-normal text-gray-500">{{ getPriceNote() }}</span>
+          </p>
+        </div>
+
+        @if (listing.negotiable) {
+          <span class="inline-block mt-2 text-xs bg-yellow-100 text-yellow-800 rounded px-2 py-1"
+            >Rent is negotiable</span
+          >
+        }
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-5 text-sm">
+          <div>
+            <p class="text-gray-500">Property type</p>
+            <p class="font-medium">{{ listing.propertyType }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Building</p>
+            <p class="font-medium">{{ listing.buildingName }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Bedrooms</p>
+            <p class="font-medium">{{ listing.beds }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Area</p>
+            <p class="font-medium">{{ listing.squareFeet }} sq ft</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Lease</p>
+            <p class="font-medium">{{ getLeaseLabel() }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Shared property</p>
+            <p class="font-medium">{{ listing.isShared ? 'Yes' : 'No' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Furnished</p>
+            <p class="font-medium">{{ listing.furnished ? 'Yes' : 'No' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Vegetarian only</p>
+            <p class="font-medium">{{ listing.vegetarianOnly ? 'Yes' : 'No preference' }}</p>
+          </div>
+          <div>
+            <p class="text-gray-500">Posted</p>
+            <p class="font-medium">{{ listing.createdAt | date: 'mediumDate' }}</p>
+          </div>
+        </div>
+
+        <h2 class="text-lg font-semibold mt-6 mb-2">Description</h2>
+        <p class="text-gray-700 whitespace-pre-line">{{ listing.description }}</p>
+
+        <h2 class="text-lg font-semibold mt-6 mb-2">Amenities</h2>
+        @if (listing.amenities.length === 0) {
+          <p class="text-gray-500 text-sm">No amenities listed.</p>
+        } @else {
+          <div class="flex flex-wrap gap-2">
+            @for (amenity of listing.amenities; track amenity) {
+              <span class="text-sm bg-indigo-50 text-indigo-700 rounded px-3 py-1">{{
+                amenity
+              }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Comments -->
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Comments</h2>
+
+        @if (threads.length === 0) {
+          <p class="text-gray-500 text-sm mb-4">No comments yet. Be the first to ask a question.</p>
+        }
+
+        @for (thread of threads; track thread.comment.id) {
+          <div class="border border-gray-200 rounded-lg p-3 mb-3">
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-gray-800">
+                {{ thread.comment.userName }}
+                @if (thread.comment.userId === listing.ownerId) {
+                  <span class="text-xs bg-indigo-100 text-indigo-700 rounded px-2 py-0.5 ml-1"
+                    >Owner</span
+                  >
+                }
+              </p>
+              <p class="text-xs text-gray-400">{{ thread.comment.createdAt | date: 'medium' }}</p>
+            </div>
+            <p class="text-gray-700 mt-1 whitespace-pre-line">{{ thread.comment.text }}</p>
+
+            @if (isLoggedIn() && replyingToId !== thread.comment.id) {
+              <button
+                type="button"
+                (click)="openReply(thread.comment.id)"
+                class="text-sm text-indigo-600 hover:underline mt-2"
+              >
+                Reply
+              </button>
+            }
+
+            <!-- Replies -->
+            @for (reply of thread.replies; track reply.id) {
+              <div class="border-l-4 border-indigo-200 bg-gray-50 rounded p-3 mt-3 ml-4">
+                <div class="flex items-center justify-between">
+                  <p class="font-semibold text-gray-800 text-sm">
+                    {{ reply.userName }}
+                    @if (reply.userId === listing.ownerId) {
+                      <span class="text-xs bg-indigo-100 text-indigo-700 rounded px-2 py-0.5 ml-1"
+                        >Owner</span
+                      >
+                    }
+                  </p>
+                  <p class="text-xs text-gray-400">{{ reply.createdAt | date: 'medium' }}</p>
+                </div>
+                <p class="text-gray-700 text-sm mt-1 whitespace-pre-line">{{ reply.text }}</p>
+              </div>
+            }
+
+            <!-- Reply box -->
+            @if (replyingToId === thread.comment.id) {
+              <div class="mt-3 ml-4">
+                <textarea
+                  [formControl]="replyControl"
+                  rows="2"
+                  placeholder="Write a reply"
+                  class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                ></textarea>
+                @if (replyControl.touched && replyControl.invalid) {
+                  <p class="text-red-600 text-sm">
+                    @if (replyControl.errors?.['required']) {
+                      Please write a reply
+                    } @else {
+                      A reply can be at most 500 characters
+                    }
+                  </p>
+                }
+                <div class="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    (click)="submitReply()"
+                    class="bg-indigo-600 text-white text-sm px-4 py-1 rounded hover:bg-indigo-700"
+                  >
+                    Send reply
+                  </button>
+                  <button
+                    type="button"
+                    (click)="cancelReply()"
+                    class="text-sm border border-gray-300 px-4 py-1 rounded hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- New comment -->
+        @if (isLoggedIn()) {
+          <label class="block text-sm font-medium text-gray-700 mb-1">Leave a Comment</label>
+          <textarea
+            [formControl]="commentControl"
+            rows="3"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          ></textarea>
+          <div class="flex justify-between text-sm">
+            <span class="text-red-600">
+              @if (commentControl.touched && commentControl.invalid) {
+                @if (commentControl.errors?.['required']) {
+                  Please write a comment
+                } @else {
+                  A comment can be at most 500 characters
+                }
+              }
+            </span>
+            <span class="text-gray-400">{{ commentControl.value.length }}/500</span>
+          </div>
+          <button
+            type="button"
+            (click)="submitComment()"
+            class="mt-2 bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700"
+          >
+            Submit
+          </button>
+        } @else {
+          <p class="text-sm text-gray-600">
+            <a
+              routerLink="/auth/login"
+              [queryParams]="{ returnUrl: getCurrentUrl() }"
+              class="text-indigo-600 hover:underline"
+              >Login</a
+            >
+            to leave a comment or reply.
+          </p>
+        }
+      </div>
+    </div>
+
+    <!-- Right side: actions -->
+    <div class="space-y-6">
+      <div class="bg-white rounded-xl shadow p-5">
+        <button
+          type="button"
+          (click)="onFavoriteClick()"
+          class="w-full rounded py-2 border"
+          [class.bg-pink-50]="isFavorite"
+          [class.border-pink-300]="isFavorite"
+          [class.text-pink-600]="isFavorite"
+          [class.border-gray-300]="!isFavorite"
+        >
+          {{ isFavorite ? '&#9829; Favorited' : '&#9825; Mark as Favorite' }}
+        </button>
+
+        @if (isOwner()) {
+          <div class="flex gap-2 mt-3">
+            <a
+              [routerLink]="['/listings', listing.id, 'edit']"
+              class="flex-1 text-center border border-gray-300 rounded py-2 hover:bg-gray-100"
+              >Edit</a
+            >
+            <button
+              type="button"
+              (click)="deleteListing()"
+              class="flex-1 border border-red-300 text-red-600 rounded py-2 hover:bg-red-50"
+            >
+              Delete
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-lg font-semibold mb-2">Contact</h2>
+        <p class="text-gray-700">{{ listing.ownerName }}</p>
+        @if (isLoggedIn()) {
+          <p class="text-sm text-gray-600">{{ listing.contactEmail }}</p>
+          <p class="text-sm text-gray-600">{{ listing.contactPhone }}</p>
+        } @else {
+          <p class="text-sm text-gray-500 mt-1">Login to see contact details.</p>
+        }
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-lg font-semibold mb-2">Send an Inquiry</h2>
+
+        @if (isOwner()) {
+          <p class="text-sm text-gray-500">
+            This is your listing, so inquiries from others will appear in your profile.
+          </p>
+        } @else if (isLoggedIn() === false) {
+          <p class="text-sm text-gray-600">
+            <a
+              routerLink="/auth/login"
+              [queryParams]="{ returnUrl: getCurrentUrl() }"
+              class="text-indigo-600 hover:underline"
+              >Login</a
+            >
+            to send an inquiry to the owner.
+          </p>
+        } @else if (inquirySent) {
+          <div class="bg-green-50 text-green-700 text-sm rounded p-3">
+            Your inquiry was sent to {{ listing.ownerName }}.
+          </div>
+          <button
+            type="button"
+            (click)="inquirySent = false"
+            class="text-sm text-indigo-600 hover:underline mt-2"
+          >
+            Send another
+          </button>
+        } @else {
+          <textarea
+            [formControl]="inquiryControl"
+            rows="4"
+            placeholder="Hi, I am interested in this place. Is it still available?"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          ></textarea>
+          <div class="flex justify-between text-sm">
+            <span class="text-red-600">
+              @if (inquiryControl.touched && inquiryControl.invalid) {
+                @if (inquiryControl.errors?.['required']) {
+                  Please write a message
+                } @else if (inquiryControl.errors?.['minlength']) {
+                  Message must be at least 10 characters
+                } @else {
+                  Message can be at most 500 characters
+                }
+              }
+            </span>
+            <span class="text-gray-400">{{ inquiryControl.value.length }}/500</span>
+          </div>
+          <button
+            type="button"
+            (click)="sendInquiry()"
+            class="w-full mt-2 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+          >
+            Send Inquiry
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-20">
+    <h1 class="text-2xl font-bold text-gray-800">Listing not found</h1>
+    <p class="text-gray-500 mt-2">It may have been removed.</p>
+    <a routerLink="/listings" class="inline-block mt-4 text-indigo-600 hover:underline"
+      >Back to all listings</a
+    >
+  </div>
+}

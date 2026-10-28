@@ -1,0 +1,48 @@
+<div class="bg-white rounded-xl shadow overflow-hidden flex flex-col h-full">
+  @if (listing.photos.length > 0) {
+    <img [src]="listing.photos[0]" [alt]="listing.title" class="h-48 w-full object-cover" />
+  }
+
+  <div class="p-4 flex flex-col flex-1">
+    <h3 class="text-lg font-semibold text-gray-800">{{ listing.title }}</h3>
+    <p class="text-sm text-gray-500">{{ listing.streetAddress }}</p>
+
+    <p class="mt-2 text-indigo-600 font-bold">
+      {{ listing.rent | currency: 'USD' : 'symbol' : '1.0-0' }}
+      <span class="text-sm font-normal text-gray-500">{{ getPriceNote() }}</span>
+    </p>
+
+    <p class="text-sm text-gray-600 mt-1">
+      {{ listing.propertyType }} &bull; {{ listing.beds }} bed &bull; {{ listing.squareFeet }} sq ft
+    </p>
+
+    <div class="flex flex-wrap gap-2 mt-2">
+      <span class="text-xs bg-gray-100 text-gray-700 rounded px-2 py-1">{{ getLeaseLabel() }}</span>
+      @if (listing.furnished) {
+        <span class="text-xs bg-green-100 text-green-700 rounded px-2 py-1">Furnished</span>
+      }
+    </div>
+
+    <p class="text-sm text-gray-600 mt-2 line-clamp-2">{{ listing.description }}</p>
+
+    <div class="flex gap-2 mt-auto pt-4">
+      <a
+        [routerLink]="['/listings', listing.id]"
+        class="flex-1 text-center text-sm border border-gray-300 rounded py-2 hover:bg-gray-100"
+      >
+        View Details
+      </a>
+      <button
+        type="button"
+        (click)="onFavoriteClick()"
+        class="flex-1 text-sm rounded py-2 border"
+        [class.bg-pink-50]="isFavorite"
+        [class.border-pink-300]="isFavorite"
+        [class.text-pink-600]="isFavorite"
+        [class.border-gray-300]="!isFavorite"
+      >
+        {{ isFavorite ? '&#9829; Favorited' : '&#9825; Mark as Favorite' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+@if (draft) {
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold text-center text-gray-800">Preview and Submit</h1>
+    <p class="text-center text-gray-500 mb-6">
+      Check everything before you {{ draft.editingId === null ? 'publish' : 'save' }} your post.
+    </p>
+
+    <div class="bg-white rounded-xl shadow p-5 mb-4">
+      <h2 class="text-xl font-bold text-gray-800">{{ draft.title }}</h2>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="space-y-4">
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Property Type</h3>
+          <p class="text-gray-600">{{ draft.propertyType }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Address</h3>
+          <p class="text-gray-600">{{ draft.streetAddress }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Description</h3>
+          <p class="text-gray-600 whitespace-pre-line">{{ draft.description }}</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Number of Beds</h3>
+          <p class="text-gray-600">{{ draft.beds }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Rent</h3>
+          <p class="text-gray-600">
+            {{ draft.rent | currency: 'USD' : 'symbol' : '1.0-2' }}{{ getPriceNote() }}
+            @if (draft.negotiable) {
+              <span class="text-xs bg-yellow-100 text-yellow-800 rounded px-2 py-1 ml-1"
+                >Negotiable</span
+              >
+            }
+          </p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <h3 class="font-semibold text-gray-800">Amenities</h3>
+          @if (draft.amenities.length === 0) {
+            <p class="text-gray-500 text-sm">None selected</p>
+          } @else {
+            <ul class="list-disc list-inside text-gray-600">
+              @for (amenity of draft.amenities; track amenity) {
+                <li>{{ amenity }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-4 mt-4">
+      <h3 class="font-semibold text-gray-800 mb-2">More details</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+        <div>
+          <p class="text-gray-500">Building</p>
+          <p>{{ draft.buildingName }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Area</p>
+          <p>{{ draft.squareFeet }} sq ft</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Lease</p>
+          <p>{{ getLeaseLabel() }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Shared property</p>
+          <p>{{ draft.isShared ? 'Yes' : 'No' }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Furnished</p>
+          <p>{{ draft.furnished ? 'Yes' : 'No' }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Vegetarian only</p>
+          <p>{{ draft.vegetarianOnly ? 'Yes' : 'No preference' }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Contact email</p>
+          <p>{{ draft.contactEmail }}</p>
+        </div>
+        <div>
+          <p class="text-gray-500">Contact phone</p>
+          <p>{{ draft.contactPhone }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-4 mt-4">
+      <h3 class="font-semibold text-gray-800 mb-2">Photos</h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        @for (photo of draft.photos; track photo) {
+          <img [src]="photo" alt="Property photo" class="h-32 w-full object-cover rounded" />
+        }
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-end mt-6">
+      <button
+        type="button"
+        (click)="backToEdit()"
+        class="px-5 py-2 border border-gray-300 rounded hover:bg-gray-100"
+      >
+        Back to Edit
+      </button>
+      <button
+        type="button"
+        (click)="submit()"
+        class="px-5 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+      >
+        {{ draft.editingId === null ? 'Submit' : 'Save changes' }}
+      </button>
+    </div>
+  </div>
+}

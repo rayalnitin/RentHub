@@ -1,0 +1,54 @@
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+    <a routerLink="/listings" (click)="closeMenu()" class="text-2xl font-bold text-indigo-600">
+      RentHub
+    </a>
+
+    <!-- Menu button, only visible on small screens -->
+    <button
+      (click)="toggleMenu()"
+      class="md:hidden text-3xl text-gray-700"
+      aria-label="Toggle menu"
+    >
+      &#9776;
+    </button>
+
+    <!-- Links: hidden on small screens until the button is clicked -->
+    <div
+      class="w-full md:w-auto md:flex md:items-center md:gap-6 mt-3 md:mt-0"
+      [class.hidden]="!menuOpen"
+    >
+      @if (isLoggedIn()) {
+        <span class="block py-2 text-gray-500">Hi, {{ getUserName() }}</span>
+        <a
+          routerLink="/listings/new"
+          (click)="closeMenu()"
+          class="block py-2 text-gray-700 hover:text-indigo-600"
+          >Post Apartment</a
+        >
+        <a
+          routerLink="/profile"
+          (click)="closeMenu()"
+          class="block py-2 text-gray-700 hover:text-indigo-600"
+          >Profile</a
+        >
+        <button (click)="logout()" class="block py-2 text-left text-red-600 hover:text-red-700">
+          Logout
+        </button>
+      } @else {
+        <a
+          routerLink="/auth/login"
+          (click)="closeMenu()"
+          class="block py-2 text-gray-700 hover:text-indigo-600"
+          >Login</a
+        >
+        <a
+          routerLink="/auth/register"
+          (click)="closeMenu()"
+          class="block py-2 text-gray-700 hover:text-indigo-600"
+          >Register</a
+        >
+      }
+    </div>
+  </div>
+</nav>

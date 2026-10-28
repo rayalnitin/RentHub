@@ -1,0 +1,451 @@
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800">
+    {{ isEditMode ? 'Edit Post' : 'Create New Post' }}
+  </h1>
+  <p class="text-gray-500 mb-4">Fields marked with * are required.</p>
+
+  @if (submitted && (postForm.invalid || photosError)) {
+    <div class="bg-red-50 text-red-700 rounded p-3 mb-4 text-sm">
+      Please fix the highlighted fields below and try again.
+    </div>
+  }
+
+  <form [formGroup]="postForm" (ngSubmit)="onPreview()" novalidate class="space-y-6">
+    <!-- Building -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Choose your Apartment/Building</h2>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="propertyType" class="block text-sm font-medium text-gray-700 mb-1"
+            >Property type *</label
+          >
+          <select
+            id="propertyType"
+            formControlName="propertyType"
+            class="w-full border rounded px-3 py-2 bg-white"
+            [ngClass]="borderClass('propertyType')"
+          >
+            <option value="">Select an option</option>
+            @for (type of propertyTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+          @if (showError('propertyType')) {
+            <p class="text-red-600 text-sm mt-1">Please select a property type</p>
+          }
+        </div>
+
+        <div>
+          <label for="buildingName" class="block text-sm font-medium text-gray-700 mb-1"
+            >Name of your apartment/building *</label
+          >
+          <input
+            id="buildingName"
+            type="text"
+            formControlName="buildingName"
+            class="w-full border rounded px-3 py-2"
+            [ngClass]="borderClass('buildingName')"
+          />
+          @if (showError('buildingName')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('buildingName', 'required')) {
+                Building name is required
+              } @else if (hasError('buildingName', 'minlength')) {
+                Name must be at least 2 characters
+              } @else {
+                Name can be at most 60 characters
+              }
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Is this a shared property? *</h2>
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2">
+          <input type="radio" formControlName="isShared" [value]="true" /> Yes
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="radio" formControlName="isShared" [value]="false" /> No
+        </label>
+      </div>
+      @if (showError('isShared')) {
+        <p class="text-red-600 text-sm mt-1">Please choose Yes or No</p>
+      }
+    </div>
+
+    <!-- Location -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Property Location</h2>
+      <label for="streetAddress" class="block text-sm font-medium text-gray-700 mb-1"
+        >Street address *</label
+      >
+      <input
+        id="streetAddress"
+        type="text"
+        formControlName="streetAddress"
+        placeholder="Enter street address"
+        class="w-full border rounded px-3 py-2"
+        [ngClass]="borderClass('streetAddress')"
+      />
+      @if (showError('streetAddress')) {
+        <p class="text-red-600 text-sm mt-1">
+          @if (hasError('streetAddress', 'required')) {
+            Street address is required
+          } @else if (hasError('streetAddress', 'minlength')) {
+            Address must be at least 5 characters
+          } @else {
+            Address can be at most 120 characters
+          }
+        </p>
+      }
+    </div>
+
+    <!-- Details -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Property Details</h2>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="squareFeet" class="block text-sm font-medium text-gray-700 mb-1"
+            >Square feet *</label
+          >
+          <input
+            id="squareFeet"
+            type="number"
+            formControlName="squareFeet"
+            placeholder="Enter area in square feet"
+            class="w-full border rounded px-3 py-2"
+            [ngClass]="borderClass('squareFeet')"
+          />
+          @if (showError('squareFeet')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('squareFeet', 'required')) {
+                Area is required
+              } @else if (hasError('squareFeet', 'min')) {
+                Area must be at least 50 sq ft
+              } @else {
+                Area can be at most 100000 sq ft
+              }
+            </p>
+          }
+        </div>
+
+        <div>
+          <label for="beds" class="block text-sm font-medium text-gray-700 mb-1"
+            >Number of beds *</label
+          >
+          <input
+            id="beds"
+            type="number"
+            formControlName="beds"
+            class="w-full border rounded px-3 py-2"
+            [ngClass]="borderClass('beds')"
+          />
+          @if (showError('beds')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('beds', 'required')) {
+                Number of beds is required
+              } @else if (hasError('beds', 'min') || hasError('beds', 'pattern')) {
+                Enter a whole number, 1 or more
+              } @else {
+                Number of beds can be at most 20
+              }
+            </p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <p class="block text-sm font-medium text-gray-700 mb-1">Stay / Lease type *</p>
+          <div class="flex flex-wrap gap-6">
+            <label class="flex items-center gap-2"
+              ><input type="radio" formControlName="leaseType" value="long" /> Long term (6+
+              months)</label
+            >
+            <label class="flex items-center gap-2"
+              ><input type="radio" formControlName="leaseType" value="short" /> Short term</label
+            >
+            <label class="flex items-center gap-2"
+              ><input type="radio" formControlName="leaseType" value="both" /> Both</label
+            >
+          </div>
+          @if (showError('leaseType')) {
+            <p class="text-red-600 text-sm mt-1">Please choose a lease type</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Rent -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Expected Rent</h2>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="rent" class="block text-sm font-medium text-gray-700 mb-1"
+            >Expected rent *</label
+          >
+          <div class="flex">
+            <span class="border border-r-0 border-gray-300 rounded-l px-3 py-2 bg-gray-50">$</span>
+            <input
+              id="rent"
+              type="number"
+              formControlName="rent"
+              placeholder="Enter expected rent"
+              class="w-full border rounded-r px-3 py-2"
+              [ngClass]="borderClass('rent')"
+            />
+          </div>
+          @if (showError('rent')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('rent', 'required')) {
+                Rent is required
+              } @else if (hasError('rent', 'min')) {
+                Rent must be greater than 0
+              } @else {
+                Rent can be at most 1,000,000
+              }
+            </p>
+          }
+        </div>
+
+        <div>
+          <label class="flex items-center gap-2 mb-2">
+            <input type="checkbox" formControlName="negotiable" /> Negotiable
+          </label>
+          <p class="block text-sm font-medium text-gray-700 mb-1">Price mode *</p>
+          <div class="space-y-1">
+            <label class="flex items-center gap-2"
+              ><input type="radio" formControlName="priceMode" value="perMonth" /> Per Month</label
+            >
+            <label class="flex items-center gap-2"
+              ><input type="radio" formControlName="priceMode" value="utilitiesIncluded" />
+              Utilities included in rent</label
+            >
+          </div>
+          @if (showError('priceMode')) {
+            <p class="text-red-600 text-sm mt-1">Please choose a price mode</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Furnished and vegetarian -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Is the room/apartment furnished? *</h2>
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2"
+          ><input type="radio" formControlName="furnished" [value]="true" /> Yes</label
+        >
+        <label class="flex items-center gap-2"
+          ><input type="radio" formControlName="furnished" [value]="false" /> No</label
+        >
+      </div>
+      @if (showError('furnished')) {
+        <p class="text-red-600 text-sm mt-1">Please choose Yes or No</p>
+      }
+
+      <h2 class="text-lg font-semibold mt-5 mb-3">Vegetarian preference</h2>
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2"
+          ><input type="radio" formControlName="vegetarianOnly" [value]="false" /> No
+          preference</label
+        >
+        <label class="flex items-center gap-2"
+          ><input type="radio" formControlName="vegetarianOnly" [value]="true" /> Vegetarian
+          only</label
+        >
+      </div>
+    </div>
+
+    <!-- Amenities -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Amenities included</h2>
+      <div class="grid gap-2 grid-cols-2 md:grid-cols-3">
+        @for (amenity of amenityOptions; track amenity) {
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              #box
+              [checked]="isAmenitySelected(amenity)"
+              (change)="toggleAmenity(amenity, box.checked)"
+            />
+            {{ amenity }}
+          </label>
+        }
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-1">Photos *</h2>
+      <p class="text-sm text-gray-500 mb-3">
+        Paste an image link, or use sample photos. Up to 6 photos.
+      </p>
+
+      <div class="flex gap-2">
+        <input
+          type="text"
+          [formControl]="photoUrl"
+          placeholder="https://example.com/photo.jpg"
+          (keydown.enter)="addPhoto(); $event.preventDefault()"
+          class="flex-1 border border-gray-300 rounded px-3 py-2"
+        />
+        <button
+          type="button"
+          (click)="addPhoto()"
+          class="px-4 border border-gray-300 rounded hover:bg-gray-100"
+        >
+          Add
+        </button>
+      </div>
+      @if (photoMessage) {
+        <p class="text-red-600 text-sm mt-1">{{ photoMessage }}</p>
+      }
+      <button
+        type="button"
+        (click)="addSamplePhotos()"
+        class="text-sm text-indigo-600 hover:underline mt-2"
+      >
+        Use sample photos
+      </button>
+
+      @if (photosError) {
+        <p class="text-red-600 text-sm mt-2">Please add at least one photo</p>
+      }
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+        @for (photo of photos; track photo; let i = $index) {
+          <div class="relative">
+            <img [src]="photo" alt="Property photo" class="h-28 w-full object-cover rounded" />
+            <button
+              type="button"
+              (click)="removePhoto(i)"
+              aria-label="Remove photo"
+              class="absolute top-1 right-1 bg-white/90 hover:bg-white text-red-600 rounded-full w-7 h-7"
+            >
+              &times;
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Title and description -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Description</h2>
+
+      <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        placeholder="Enter your AD title"
+        class="w-full border rounded px-3 py-2"
+        [ngClass]="borderClass('title')"
+      />
+      @if (showError('title')) {
+        <p class="text-red-600 text-sm mt-1">
+          @if (hasError('title', 'required')) {
+            Title is required
+          } @else if (hasError('title', 'minlength')) {
+            Title must be at least 5 characters
+          } @else {
+            Title can be at most 80 characters
+          }
+        </p>
+      }
+
+      <label for="description" class="block text-sm font-medium text-gray-700 mt-4 mb-1"
+        >Description *</label
+      >
+      <textarea
+        id="description"
+        rows="6"
+        formControlName="description"
+        placeholder="Enter a detailed description within 1400 characters"
+        class="w-full border rounded px-3 py-2"
+        [ngClass]="borderClass('description')"
+      ></textarea>
+      <div class="flex justify-between text-sm">
+        <span class="text-red-600">
+          @if (showError('description')) {
+            @if (hasError('description', 'required')) {
+              Description is required
+            } @else if (hasError('description', 'minlength')) {
+              Description must be at least 20 characters
+            } @else {
+              Description can be at most 1400 characters
+            }
+          }
+        </span>
+        <span class="text-gray-400">{{ getDescriptionLength() }}/1400</span>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="bg-white rounded-xl shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">Contact details</h2>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="contactEmail" class="block text-sm font-medium text-gray-700 mb-1"
+            >Contact email *</label
+          >
+          <input
+            id="contactEmail"
+            type="email"
+            formControlName="contactEmail"
+            class="w-full border rounded px-3 py-2"
+            [ngClass]="borderClass('contactEmail')"
+          />
+          @if (showError('contactEmail')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('contactEmail', 'required')) {
+                Contact email is required
+              } @else {
+                Please enter a valid email address
+              }
+            </p>
+          }
+        </div>
+
+        <div>
+          <label for="contactPhone" class="block text-sm font-medium text-gray-700 mb-1"
+            >Contact phone *</label
+          >
+          <input
+            id="contactPhone"
+            type="text"
+            formControlName="contactPhone"
+            placeholder="e.g. 555-0123"
+            class="w-full border rounded px-3 py-2"
+            [ngClass]="borderClass('contactPhone')"
+          />
+          @if (showError('contactPhone')) {
+            <p class="text-red-600 text-sm mt-1">
+              @if (hasError('contactPhone', 'required')) {
+                Contact phone is required
+              } @else {
+                Enter 7 to 15 digits (you may use + - and spaces)
+              }
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-end">
+      <button
+        type="button"
+        (click)="cancel()"
+        class="px-5 py-2 border border-gray-300 rounded hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+      <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        Preview
+      </button>
+    </div>
+  </form>
+</div>

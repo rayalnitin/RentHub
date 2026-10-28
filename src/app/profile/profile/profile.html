@@ -1,0 +1,185 @@
+@if (user) {
+  <div class="max-w-6xl mx-auto">
+    <!-- User card -->
+    <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+      <div
+        class="w-14 h-14 rounded-full bg-indigo-600 text-white text-2xl font-bold flex items-center justify-center"
+      >
+        {{ user.name.charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-gray-800">{{ user.name }}</h1>
+        <p class="text-gray-500">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex flex-wrap gap-2 mt-6 border-b border-gray-200">
+      <button
+        type="button"
+        (click)="selectTab('listings')"
+        class="px-4 py-2 -mb-px border-b-2"
+        [class.border-indigo-600]="activeTab === 'listings'"
+        [class.text-indigo-600]="activeTab === 'listings'"
+        [class.border-transparent]="activeTab !== 'listings'"
+        [class.text-gray-600]="activeTab !== 'listings'"
+      >
+        My Listings ({{ myListings.length }})
+      </button>
+      <button
+        type="button"
+        (click)="selectTab('favorites')"
+        class="px-4 py-2 -mb-px border-b-2"
+        [class.border-indigo-600]="activeTab === 'favorites'"
+        [class.text-indigo-600]="activeTab === 'favorites'"
+        [class.border-transparent]="activeTab !== 'favorites'"
+        [class.text-gray-600]="activeTab !== 'favorites'"
+      >
+        Favourites ({{ favoriteListings.length }})
+      </button>
+      <button
+        type="button"
+        (click)="selectTab('received')"
+        class="px-4 py-2 -mb-px border-b-2"
+        [class.border-indigo-600]="activeTab === 'received'"
+        [class.text-indigo-600]="activeTab === 'received'"
+        [class.border-transparent]="activeTab !== 'received'"
+        [class.text-gray-600]="activeTab !== 'received'"
+      >
+        Inquiries Received ({{ receivedInquiries.length }})
+      </button>
+      <button
+        type="button"
+        (click)="selectTab('sent')"
+        class="px-4 py-2 -mb-px border-b-2"
+        [class.border-indigo-600]="activeTab === 'sent'"
+        [class.text-indigo-600]="activeTab === 'sent'"
+        [class.border-transparent]="activeTab !== 'sent'"
+        [class.text-gray-600]="activeTab !== 'sent'"
+      >
+        Inquiries Sent ({{ sentInquiries.length }})
+      </button>
+    </div>
+
+    <div class="mt-6">
+      <!-- My listings -->
+      @if (activeTab === 'listings') {
+        @if (myListings.length === 0) {
+          <div class="text-center py-12 text-gray-500">
+            You have not posted any listings yet.
+            <a routerLink="/listings/new" class="text-indigo-600 hover:underline"
+              >Post your first apartment</a
+            >
+          </div>
+        } @else {
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            @for (listing of myListings; track listing.id) {
+              <div>
+                <app-listing-card
+                  [listing]="listing"
+                  [isFavorite]="favoriteIds.includes(listing.id)"
+                  (favoriteClick)="removeFavorite(listing.id)"
+                >
+                </app-listing-card>
+                <div class="flex gap-2 mt-2">
+                  <a
+                    [routerLink]="['/listings', listing.id, 'edit']"
+                    class="flex-1 text-center text-sm border border-gray-300 rounded py-2 bg-white hover:bg-gray-100"
+                    >Edit</a
+                  >
+                  <button
+                    type="button"
+                    (click)="deleteListing(listing.id)"
+                    class="flex-1 text-sm border border-red-300 text-red-600 rounded py-2 bg-white hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Favourites -->
+      @if (activeTab === 'favorites') {
+        @if (favoriteListings.length === 0) {
+          <div class="text-center py-12 text-gray-500">
+            No favourites yet. Mark a listing as favourite and it will show up here.
+            <a routerLink="/listings" class="text-indigo-600 hover:underline">Browse listings</a>
+          </div>
+        } @else {
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            @for (listing of favoriteListings; track listing.id) {
+              <app-listing-card
+                [listing]="listing"
+                [isFavorite]="true"
+                (favoriteClick)="removeFavorite(listing.id)"
+              >
+              </app-listing-card>
+            }
+          </div>
+        }
+      }
+
+      <!-- Inquiries received -->
+      @if (activeTab === 'received') {
+        @if (receivedInquiries.length === 0) {
+          <div class="text-center py-12 text-gray-500">
+            Nobody has sent an inquiry about your listings yet.
+          </div>
+        } @else {
+          <div class="space-y-3">
+            @for (inquiry of receivedInquiries; track inquiry.id) {
+              <div class="bg-white rounded-xl shadow p-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="font-semibold text-gray-800">{{ inquiry.fromUserName }}</p>
+                  <p class="text-xs text-gray-400">{{ inquiry.createdAt | date: 'medium' }}</p>
+                </div>
+                <p class="text-sm text-gray-500">
+                  About:
+                  <a
+                    [routerLink]="['/listings', inquiry.listingId]"
+                    class="text-indigo-600 hover:underline"
+                    >{{ inquiry.listingTitle }}</a
+                  >
+                </p>
+                <p class="text-gray-700 mt-2 whitespace-pre-line">{{ inquiry.message }}</p>
+                <a
+                  [href]="'mailto:' + inquiry.fromEmail"
+                  class="inline-block mt-2 text-sm text-indigo-600 hover:underline"
+                  >Reply by email ({{ inquiry.fromEmail }})</a
+                >
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Inquiries sent -->
+      @if (activeTab === 'sent') {
+        @if (sentInquiries.length === 0) {
+          <div class="text-center py-12 text-gray-500">You have not sent any inquiries yet.</div>
+        } @else {
+          <div class="space-y-3">
+            @for (inquiry of sentInquiries; track inquiry.id) {
+              <div class="bg-white rounded-xl shadow p-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="font-semibold text-gray-800">
+                    <a
+                      [routerLink]="['/listings', inquiry.listingId]"
+                      class="text-indigo-600 hover:underline"
+                      >{{ inquiry.listingTitle }}</a
+                    >
+                  </p>
+                  <p class="text-xs text-gray-400">{{ inquiry.createdAt | date: 'medium' }}</p>
+                </div>
+                <p class="text-gray-700 mt-2 whitespace-pre-line">{{ inquiry.message }}</p>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+}
