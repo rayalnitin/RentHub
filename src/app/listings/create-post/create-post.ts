@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Listing } from '../../core/models/listing.model';
-import { ListingDraft } from '../../core/models/lisitng-draft.model';
+import { ListingDraft } from '../../core/models/lisiting-draft.model';
 import { AMENITY_OPTIONS, PROPERTY_TYPES } from '../../core/data/options';
 import { ListingService } from '../../core/services/listing.service';
 import { DraftService } from '../../core/services/draft.service';
@@ -42,6 +42,7 @@ export class CreatePost implements OnInit {
   photos: string[] = [];
   photoUrl = new FormControl('', { nonNullable: true });
   photoMessage = '';
+  isCheckingPhoto = false;
 
   postForm = new FormGroup({
     propertyType: new FormControl('', [Validators.required]),
@@ -259,16 +260,34 @@ export class CreatePost implements OnInit {
 
   // ---------- Photos ----------
 
+  // Checks that the text is a complete web address, like https://example.com/photo.jpg
+  isValidLink(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return false;
+      }
+      // A real website name has at least one dot, like example.com
+      if (parsed.hostname.includes('.') === false) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      // new URL() throws an error when the text is not a proper address
+      return false;
+    }
+  }
+
   addPhoto(): void {
     this.photoMessage = '';
+    if (this.isCheckingPhoto) {
+      return;
+    }
+
     const url = this.photoUrl.value.trim();
 
     if (url === '') {
       this.photoMessage = 'Please paste an image link first';
-      return;
-    }
-    if (url.startsWith('http://') === false && url.startsWith('https://') === false) {
-      this.photoMessage = 'The link must start with http:// or https://';
       return;
     }
     if (this.photos.includes(url)) {
@@ -279,10 +298,50 @@ export class CreatePost implements OnInit {
       this.photoMessage = 'You can add up to 6 photos';
       return;
     }
+    if (this.isValidLink(url) === false) {
+      this.photoMessage = 'Please enter a complete link, for example https://example.com/photo.jpg';
+      return;
+    }
 
-    this.photos.push(url);
-    this.photoUrl.setValue('');
-    this.photosError = false;
+    this.checkImageAndAdd(url);
+  }
+
+  // Asks the browser to load the link as an image. We add the photo only if it really loads.
+  checkImageAndAdd(url: string): void {
+    this.isCheckingPhoto = true;
+    let finished = false;
+    const testImage = new Image();
+
+    // Runs once, when the image loads, fails, or takes too long
+    const finish = (worked: boolean) => {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      clearTimeout(timer);
+      this.isCheckingPhoto = false;
+
+      if (worked) {
+        this.photos.push(url);
+        this.photoUrl.setValue('');
+        this.photosError = false;
+      } else {
+        this.photoMessage = 'This link does not open as an image. Please check it and try again.';
+      }
+    };
+
+    // Give up after 8 seconds
+    const timer = setTimeout(() => {
+      finish(false);
+    }, 8000);
+
+    testImage.onload = () => {
+      finish(true);
+    };
+    testImage.onerror = () => {
+      finish(false);
+    };
+    testImage.src = url;
   }
 
   addSamplePhotos(): void {

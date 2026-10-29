@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ListingDraft } from '../../core/models/lisitng-draft.model';
+import { ListingDraft } from '../../core/models/lisiting-draft.model';
 import { ListingService } from '../../core/services/listing.service';
 import { DraftService } from '../../core/services/draft.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,6 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class PreviewSubmit implements OnInit {
   draft: ListingDraft | null = null;
+  isSubmitting = false;
 
   private router: Router;
   private listingService: ListingService;
@@ -77,6 +78,12 @@ export class PreviewSubmit implements OnInit {
     if (this.draft === null || user === null) {
       return;
     }
+
+    // A second click while the first is still working does nothing
+    if (this.isSubmitting) {
+      return;
+    }
+    this.isSubmitting = true;
 
     let savedId: number;
     if (this.draft.editingId === null) {

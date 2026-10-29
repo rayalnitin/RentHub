@@ -114,7 +114,8 @@
       <button
         type="button"
         (click)="submit()"
-        class="px-5 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        [disabled]="isSubmitting"
+        class="px-5 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
       >
         {{ draft.editingId === null ? 'Submit' : 'Save changes' }}
       </button>

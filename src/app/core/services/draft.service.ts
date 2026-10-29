@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ListingDraft } from '../models/lisitng-draft.model';
+import { ListingDraft } from '../models/lisiting-draft.model';
 
 // Holds the half finished post while the user moves between the form and the preview
 @Injectable({

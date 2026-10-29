@@ -5,7 +5,7 @@ import { ListingFilters } from '../models/listing-filters.model';
 import { Comment } from '../models/comment.model';
 import { Inquiry } from '../models/inquiry.model';
 import { Favorite } from '../models/favorite.model';
-import { ListingDraft } from '../models/lisitng-draft.model';
+import { ListingDraft } from '../models/lisiting-draft.model';
 
 @Injectable({
   providedIn: 'root',

@@ -295,9 +295,10 @@
         <button
           type="button"
           (click)="addPhoto()"
-          class="px-4 border border-gray-300 rounded hover:bg-gray-100"
+          [disabled]="isCheckingPhoto"
+          class="px-4 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
         >
-          Add
+          {{ isCheckingPhoto ? 'Checking...' : 'Add' }}
         </button>
       </div>
       @if (photoMessage) {

@@ -131,6 +131,9 @@
         (ngModelChange)="applyFilters()"
         class="w-full border border-gray-300 rounded px-3 py-2"
       />
+      @if (hasRentRangeError()) {
+        <p class="text-red-600 text-sm mt-1">Min rent is higher than max rent</p>
+      }
     </div>
 
     <div>

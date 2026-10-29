@@ -68,6 +68,14 @@ export class Home implements OnInit {
     this.applyFilters();
   }
 
+  // True when the minimum rent is bigger than the maximum rent
+  hasRentRangeError(): boolean {
+    if (this.filters.minRent === null || this.filters.maxRent === null) {
+      return false;
+    }
+    return this.filters.minRent > this.filters.maxRent;
+  }
+
   isAmenitySelected(name: string): boolean {
     for (let i = 0; i < this.filters.amenities.length; i++) {
       if (this.filters.amenities[i] === name) {
